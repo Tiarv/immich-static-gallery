@@ -10,18 +10,14 @@
   },
   "dependencies": {
     "axios": "^1.6.8",
-    "chalk": "^5.3.0",
     "commander": "^11.1.0",
     "dotenv": "^16.4.7",
-    "fs-extra": "^11.2.0",
     "js-yaml": "^4.1.0",
     "lowdb": "^7.0.1",
-    "node-cron": "^3.0.3",
-    "yaml": "^2.3.4"
+    "node-cron": "^3.0.3"
   },
   "devDependencies": {
-    "thumbsup": "^2.18.0",
-    "which": "^5.0.0"
+    "thumbsup": "^2.18.0"
   },
   "engines": {
     "node": ">=18"

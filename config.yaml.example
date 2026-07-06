@@ -1,10 +1,13 @@
 albums:
   - id: "album-uuid-from-immich"
+    # Use only letters, numbers, dots, underscores, and hyphens
     slug: "family-vacation"
     title: "Family Vacation"
 
 scan:
   intervalMinutes: 60
+  # Set to true to stop watch mode after a scheduled sync fails
+  exitOnError: false
 
 
 gallery:
@@ -23,5 +26,7 @@ gallery:
 notify:
   # URL to send a POST request to when changes are detected
   webhookUrl: ""
-  # Set to true to fail the sync when the webhook request fails
+  # Set to true to fail the current sync when the webhook request fails.
+  # In once mode this exits non-zero. In watch mode the failure is logged and
+  # the next scheduled sync still runs.
   failOnError: false
