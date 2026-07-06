@@ -45,6 +45,7 @@ Copy `config.yaml.example` to `config.yaml` and customize it.
 albums:
   - id: "album-uuid-from-immich" # Get this from the Immich web UI URL
     slug: "family-vacation"      # URL-friendly name for the gallery folder
+                                  # Use only letters, numbers, dots, underscores, and hyphens
     title: "Family Vacation"     # Display title for the gallery
 
 scan:
@@ -67,7 +68,9 @@ gallery:
 notify:
   # URL to send a POST request to. Leave empty to disable.
   webhookUrl: "https://your-webhook-endpoint.com/notify"
-  # Set to true to fail the sync when the webhook request fails.
+  # Set to true to fail the current sync when the webhook request fails.
+  # In once mode this exits non-zero. In watch mode the failure is logged and
+  # the next scheduled sync still runs.
   failOnError: false
 ```
 
