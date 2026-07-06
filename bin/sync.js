@@ -10,12 +10,6 @@ import { downloadAssets } from "../lib/downloader.js"
 import { buildGallery } from "../lib/gallery.js"
 import { deploy } from "../lib/deploy.js"
 import { sendNotification } from "../lib/notify.js"
-import dotenv from "dotenv"
-
-dotenv.config()
-
-const immichApiToken = process.env.IMMICH_API_KEY
-const immichServer = process.env.IMMICH_SERVER
 
 const program = new Command()
 
@@ -52,7 +46,10 @@ async function build(cfg, db) {
   }
 
   // ── 1) Per‑album sync (additions & deletions) ────────────────────
-  const client = createClient({ immichServer, immichApiToken })
+  const client = createClient({
+    immichServer: cfg.immich.serverUrl,
+    immichApiToken: cfg.immich.apiKey,
+  })
 
   for (const album of cfg.albums) {
     const albumDir = path.join(contentRoot, album.slug)
