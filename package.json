@@ -22,8 +22,7 @@
   },
   "devDependencies": {
     "thumbsup": "^2.18.0",
-    "which": "^5.0.0",
-    "wrangler": "^4.7.2"
+    "which": "^5.0.0"
   },
   "engines": {
     "node": ">=18"

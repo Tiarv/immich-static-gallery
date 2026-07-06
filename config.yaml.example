@@ -20,9 +20,7 @@ gallery:
     - "desc"
 
 deploy:
-  method: cloudflare
-  cloudflare:
-    projectName: "static-immich"
+  method: null
 
 # Optional: Send a notification when the gallery is updated
 notify:

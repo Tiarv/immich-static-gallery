@@ -28,6 +28,7 @@ program
 program.parse(process.argv)
 
 const [mode] = program.args
+const { config: configPath } = program.opts()
 
 async function build(cfg, db) {
   const contentRoot = cfg.paths.contentDir
@@ -119,7 +120,7 @@ async function build(cfg, db) {
 }
 
 async function main() {
-  const cfg = loadConfig()
+  const cfg = loadConfig(configPath)
   const db = await createCache(cfg.paths.cacheFile)
 
   if (mode === "once") {
