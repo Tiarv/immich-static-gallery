@@ -33,7 +33,7 @@ async function build(cfg, db) {
   let changed = false
 
   // ── 0) Remove any album folder no longer in config ──────────────
-  const validSlugs = cfg.albums.map((a) => a.slug)
+  const validSlugs = new Set(cfg.albums.map((a) => a.slug))
   const validAlbumIds = cfg.albums.map((a) => a.id)
   const staleAlbumIds = await pruneAlbumCache(db, validAlbumIds)
   if (staleAlbumIds.length) {
@@ -43,7 +43,7 @@ async function build(cfg, db) {
   try {
     const entries = await fs.readdir(contentRoot, { withFileTypes: true })
     for (const ent of entries) {
-      if (ent.isDirectory() && !validSlugs.includes(ent.name)) {
+      if (ent.isDirectory() && !validSlugs.has(ent.name)) {
         const stalePath = path.join(contentRoot, ent.name)
         console.log(`🗑 Removing stale album folder: ${ent.name}`)
         await fs.rm(stalePath, { recursive: true, force: true })
@@ -71,20 +71,30 @@ async function build(cfg, db) {
     const allAssets = await client.listAssets(album.id)
 
     const currentIds = allAssets.map((a) => a.id)
-
+    const currentIdSet = new Set(currentIds)
 
     // load previously seen IDs
     const seenIds = getSeenIds(db, album.id)
+    const seenIdSet = new Set(seenIds)
 
     // deletions: IDs in seenIds but not in currentIds
-    const deletedIds = seenIds.filter((id) => !currentIds.includes(id))
+    const deletedIds = seenIds.filter((id) => !currentIdSet.has(id))
     if (deletedIds.length) {
       console.log(
         `– ${deletedIds.length} items removed from "${album.slug}", deleting files`
       )
       const files = await fs.readdir(albumDir)
+      const filesByAssetId = new Map()
+
+      for (const file of files) {
+        const assetId = path.parse(file).name
+        const assetFiles = filesByAssetId.get(assetId) || []
+        assetFiles.push(file)
+        filesByAssetId.set(assetId, assetFiles)
+      }
+
       for (const id of deletedIds) {
-        for (const file of files.filter((f) => path.parse(f).name === id)) {
+        for (const file of filesByAssetId.get(id) || []) {
           await fs.rm(path.join(albumDir, file))
           console.log(`  • Deleted ${file}`)
         }
@@ -93,7 +103,7 @@ async function build(cfg, db) {
     }
 
     // additions: assets not in seenIds
-    const newAssets = allAssets.filter((a) => !seenIds.includes(a.id))
+    const newAssets = allAssets.filter((a) => !seenIdSet.has(a.id))
     if (newAssets.length) {
       console.log(
         `+ ${newAssets.length} new items in "${album.slug}", downloading`
@@ -142,7 +152,12 @@ async function main() {
     await build(cfg, db)
     const expr = `*/${cfg.scan.intervalMinutes} * * * *`
     console.log(`Scheduling every ${cfg.scan.intervalMinutes} minutes.`)
-    cron.schedule(expr, () => build(cfg, db).catch(console.error))
+    cron.schedule(expr, () =>
+      build(cfg, db).catch((err) => {
+        console.error("Scheduled sync failed; next run will still be attempted.")
+        console.error(err)
+      })
+    )
     return
   }
 
