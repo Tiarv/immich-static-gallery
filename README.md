@@ -67,6 +67,8 @@ gallery:
 notify:
   # URL to send a POST request to. Leave empty to disable.
   webhookUrl: "https://your-webhook-endpoint.com/notify"
+  # Set to true to fail the sync when the webhook request fails.
+  failOnError: false
 ```
 
 ### 3. Create your `.env` file

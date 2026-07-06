@@ -23,3 +23,5 @@ gallery:
 notify:
   # URL to send a POST request to when changes are detected
   webhookUrl: ""
+  # Set to true to fail the sync when the webhook request fails
+  failOnError: false

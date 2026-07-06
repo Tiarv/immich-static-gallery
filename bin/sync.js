@@ -84,7 +84,7 @@ async function build(cfg, db) {
       )
       const files = await fs.readdir(albumDir)
       for (const id of deletedIds) {
-        for (const file of files.filter((f) => f.startsWith(id))) {
+        for (const file of files.filter((f) => path.parse(f).name === id)) {
           await fs.rm(path.join(albumDir, file))
           console.log(`  • Deleted ${file}`)
         }
@@ -117,7 +117,12 @@ async function build(cfg, db) {
     })
     // Send notification if webhook is configured
     if (cfg.notify?.webhookUrl) {
-      await sendNotification(cfg.notify.webhookUrl);
+      const notified = await sendNotification(cfg.notify.webhookUrl)
+      if (!notified) {
+        const message = "Webhook notification failed after gallery update."
+        if (cfg.notify.failOnError) throw new Error(message)
+        console.warn(message)
+      }
     }
   } else {
     console.log("No changes detected; skipping build.")
