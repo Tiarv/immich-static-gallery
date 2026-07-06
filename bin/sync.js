@@ -4,7 +4,12 @@ import cron from "node-cron"
 import fs from "fs/promises"
 import path from "path"
 import { loadConfig } from "../lib/config.js"
-import { createCache, getSeenIds, setSeenIds } from "../lib/cache.js"
+import {
+  createCache,
+  getSeenIds,
+  pruneAlbumCache,
+  setSeenIds,
+} from "../lib/cache.js"
 import { createClient } from "../lib/api.js"
 import { downloadAssets } from "../lib/downloader.js"
 import { buildGallery } from "../lib/gallery.js"
@@ -30,6 +35,12 @@ async function build(cfg, db) {
 
   // ── 0) Remove any album folder no longer in config ──────────────
   const validSlugs = cfg.albums.map((a) => a.slug)
+  const validAlbumIds = cfg.albums.map((a) => a.id)
+  const staleAlbumIds = await pruneAlbumCache(db, validAlbumIds)
+  if (staleAlbumIds.length) {
+    console.log(`🗑 Removed ${staleAlbumIds.length} stale album cache entries.`)
+  }
+
   try {
     const entries = await fs.readdir(contentRoot, { withFileTypes: true })
     for (const ent of entries) {
@@ -59,9 +70,9 @@ async function build(cfg, db) {
 
     // fetch current assets
     const allAssets = await client.listAssets(album.id)
-    
+
     const currentIds = allAssets.map((a) => a.id)
-    
+
 
     // load previously seen IDs
     const seenIds = getSeenIds(db, album.id)
@@ -103,7 +114,7 @@ async function build(cfg, db) {
     await buildGallery({
       contentDir: contentRoot,
       publicDir: cfg.paths.publicDir,
-      flags: cfg.gallery.flags,
+      flags: cfg.gallery?.flags,
     })
     await deploy(cfg, cfg.paths.publicDir)
 
