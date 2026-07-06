@@ -63,13 +63,12 @@ gallery:
     - "--cleanup" # Remove temporary files after build
     # Add any other valid thumbsup flags here
 
-deploy:
-  method: null
-
 # Optional: Notify a webhook when the gallery is updated
 notify:
   # URL to send a POST request to. Leave empty to disable.
   webhookUrl: "https://your-webhook-endpoint.com/notify"
+  # Set to true to fail the sync when the webhook request fails.
+  failOnError: false
 ```
 
 ### 3. Create your `.env` file

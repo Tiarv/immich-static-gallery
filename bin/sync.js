@@ -13,7 +13,6 @@ import {
 import { createClient } from "../lib/api.js"
 import { downloadAssets } from "../lib/downloader.js"
 import { buildGallery } from "../lib/gallery.js"
-import { deploy } from "../lib/deploy.js"
 import { sendNotification } from "../lib/notify.js"
 
 const program = new Command()
@@ -85,7 +84,7 @@ async function build(cfg, db) {
       )
       const files = await fs.readdir(albumDir)
       for (const id of deletedIds) {
-        for (const file of files.filter((f) => f.startsWith(id))) {
+        for (const file of files.filter((f) => path.parse(f).name === id)) {
           await fs.rm(path.join(albumDir, file))
           console.log(`  • Deleted ${file}`)
         }
@@ -109,21 +108,24 @@ async function build(cfg, db) {
     }
   }
 
-  // ── 2) Rebuild & deploy if needed ────────────────────────────────
+  // ── 2) Rebuild if needed ─────────────────────────────────────────
   if (changed) {
     await buildGallery({
       contentDir: contentRoot,
       publicDir: cfg.paths.publicDir,
       flags: cfg.gallery?.flags,
     })
-    await deploy(cfg, cfg.paths.publicDir)
-
     // Send notification if webhook is configured
     if (cfg.notify?.webhookUrl) {
-      await sendNotification(cfg.notify.webhookUrl);
+      const notified = await sendNotification(cfg.notify.webhookUrl)
+      if (!notified) {
+        const message = "Webhook notification failed after gallery update."
+        if (cfg.notify.failOnError) throw new Error(message)
+        console.warn(message)
+      }
     }
   } else {
-    console.log("No changes detected; skipping build/deploy.")
+    console.log("No changes detected; skipping build.")
   }
 }
 
