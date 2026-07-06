@@ -19,9 +19,6 @@ gallery:
     - "--sort-media-direction"
     - "desc"
 
-deploy:
-  method: null
-
 # Optional: Send a notification when the gallery is updated
 notify:
   # URL to send a POST request to when changes are detected
