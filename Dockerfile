@@ -59,9 +59,13 @@ RUN npm ci --omit=dev
 # This keeps layers slightly more logical, though size impact is minimal
 RUN npm install -g thumbsup
 
-# Copy application code (excluding node_modules) from the builder stage
-# This ensures we get the source code without the devDependencies from the builder's node_modules
-COPY --from=builder /app /app
+# Copy only application source and documentation from the builder stage.
+# Do not copy /app/node_modules, otherwise the builder's devDependencies
+# would overwrite the production-only install above.
+COPY --from=builder /app/bin ./bin
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/README.md ./README.md
+COPY --from=builder /app/config.yaml.example ./config.yaml.example
 
 # Set Tini as the entrypoint for proper signal handling & zombie reaping
 ENTRYPOINT ["tini", "-g", "--"]
