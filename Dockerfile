@@ -57,7 +57,7 @@ RUN npm ci --omit=dev
 
 # Install global dependencies needed at runtime AFTER production deps are installed
 # This keeps layers slightly more logical, though size impact is minimal
-RUN npm install -g thumbsup wrangler
+RUN npm install -g thumbsup
 
 # Copy application code (excluding node_modules) from the builder stage
 # This ensures we get the source code without the devDependencies from the builder's node_modules

@@ -1,6 +1,6 @@
 # Immich Static Gallery
 
-A lightweight, Dockerized tool that syncs albums from your **[Immich](https://github.com/immich-app/immich)** server, generates a **static photo & video gallery** using **[Thumbsup](https://thumbsup.github.io/)**, and optionally deploys it to **Cloudflare Pages**.
+A lightweight, Dockerized tool that syncs albums from your **[Immich](https://github.com/immich-app/immich)** server and generates a **static photo & video gallery** using **[Thumbsup](https://thumbsup.github.io/)**.
 
 ## Why?
 Immich is amazing, but I don't feel confortable exposing my server with all my other services to the internet. This tool lets easily share and existing album publicly **without exposing your Immich server**.
@@ -12,7 +12,6 @@ Immich is amazing, but I don't feel confortable exposing my server with all my o
 - Syncs selected **Immich album(s)** via API
 - Automatically **detects new photos/videos** using an internal cache
 - Generates a static gallery using the **Thumbsup** engine (default theme: Cards)
-- Optionally deploys to **Cloudflare Pages**
 - Runs in a **single Docker container**
 - Configurable via `config.yaml`
 - Docker compose file ready to use
@@ -65,10 +64,7 @@ gallery:
     # Add any other valid thumbsup flags here
 
 deploy:
-  method: "cloudflare"  # or null to disable
-  cloudflare:
-    # Requires CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN in .env
-    projectName: "your-cloudflare-pages-project-name"
+  method: null
 
 # Optional: Notify a webhook when the gallery is updated
 notify:
@@ -78,7 +74,7 @@ notify:
 
 ### 3. Create your `.env` file
 
-You can provide Immich and Cloudflare credentials via a `.env` file:
+You can provide Immich credentials via a `.env` file:
 
 ```dotenv
 # .env file
@@ -87,9 +83,6 @@ You can provide Immich and Cloudflare credentials via a `.env` file:
 IMMICH_SERVER=https://your-immich.instance/api
 IMMICH_API_KEY=your_long_api_key_from_immich
 
-# --- Required for Cloudflare deployment (if method is 'cloudflare') ---
-CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
-CLOUDFLARE_API_TOKEN=your_cloudflare_api_token_with_pages_permission
 ```
 
 ### 4. Run with Docker Compose
@@ -109,8 +102,7 @@ This will:
 2. Start the container.
 3. Pull initial assets from Immich.
 4. Generate the static gallery into the `./data/public` directory.
-5. Deploy if configured.
-6. Continue running in the background, checking for updates every `scan.intervalMinutes`.
+5. Continue running in the background, checking for updates every `scan.intervalMinutes`.
 
 Check the logs: `docker compose logs -f`
 
@@ -126,16 +118,3 @@ docker compose run --rm gallery node bin/sync.js once --config config.yaml
 *(Note: Environment variables from `.env` might not be automatically loaded with `docker compose run`. You might need to pass them explicitly or use a different method.)*
 
 ---
-
-## Deployment Options
-
-### Cloudflare Pages
-
-- **Prerequisites:**
-    - You must have a Cloudflare account.
-    - **You need to create a Cloudflare Pages project manually *before* running the deployment.** You can create an empty project or connect it to a placeholder Git repository initially.
-    - The `projectName` in your `config.yaml` **must exactly match** the name of your existing Cloudflare Pages project.
-- **Authentication:**
-    - Provide your Cloudflare Account ID and an API Token with "Cloudflare Pages" edit permissions via the `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` environment variables. Your Cloudflare token need to have the permissions below:
-
-![permissions](./docs/token-permissions.png)
