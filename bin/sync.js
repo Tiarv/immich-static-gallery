@@ -13,7 +13,6 @@ import {
 import { createClient } from "../lib/api.js"
 import { downloadAssets } from "../lib/downloader.js"
 import { buildGallery } from "../lib/gallery.js"
-import { deploy } from "../lib/deploy.js"
 import { sendNotification } from "../lib/notify.js"
 
 const program = new Command()
@@ -109,21 +108,19 @@ async function build(cfg, db) {
     }
   }
 
-  // ── 2) Rebuild & deploy if needed ────────────────────────────────
+  // ── 2) Rebuild if needed ─────────────────────────────────────────
   if (changed) {
     await buildGallery({
       contentDir: contentRoot,
       publicDir: cfg.paths.publicDir,
       flags: cfg.gallery?.flags,
     })
-    await deploy(cfg, cfg.paths.publicDir)
-
     // Send notification if webhook is configured
     if (cfg.notify?.webhookUrl) {
       await sendNotification(cfg.notify.webhookUrl);
     }
   } else {
-    console.log("No changes detected; skipping build/deploy.")
+    console.log("No changes detected; skipping build.")
   }
 }
 
